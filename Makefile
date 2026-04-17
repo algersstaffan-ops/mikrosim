@@ -1,6 +1,6 @@
 FC = gfortran
 FFLAGS = -O2 -Wall -Wextra -std=f2008
-SRC = src/mikrosim_mnl.f90
+SRC = src/Mikrosim_ny.f90
 BIN = bin/mikrosim
 
 .PHONY: all build run clean
@@ -15,4 +15,4 @@ run: build
 	$(BIN)
 
 clean:
-	rm -rf bin
+	rm -rf bin output
