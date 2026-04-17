@@ -1,48 +1,46 @@
 # mikrosim
 
-This repository now includes a runnable Fortran implementation of the multinomial logit model described below.
+Fortran microsimulation model for:
+1. Household probability to buy a new car (binary logit)
+2. Car type choice (multinomial logit)
 
-## Model specification
+## Program stages implemented
 
-Multinomial logit model with 3 alternatives. Utility function variables:
-- `Purchase_cost`
-- `Fuel_cost`
-- `Curb_weight`
+- Initialization of model parameters for both sub-models.
+- Reading synthetic population data (up to 100000 rows).
+- Reading zone data.
+- Reading base car alternatives.
+- Applying scenario adjustments to technical/policy-sensitive attributes.
+- Building transformed variables for all alternatives.
+- For each household:
+  - computing `p_newcar`
+  - computing car type probabilities `p_ct`
+  - accumulating `weight * hhvikt * p_newcar * p_ct`
+- Writing aggregated outputs.
 
-Parameters read from standard input:
-- `b1`, `b2`, `b3`, `b4`
+## Files and expected formats
 
-Data (8 observations):
+Input files (in `data/`):
+- `population.csv`
+- `zones.csv`
+- `base_car_alternatives.csv`
+- `Fuelprice.dat`
+- `scenario.dat`
 
-| RowID | Purchase_cost | Fuel_cost | Curb_weight |
-|------:|--------------:|----------:|------------:|
-| 1 | 100 | 6 | 1200 |
-| 2 | 120 | 8 | 1300 |
-| 3 | 140 | 7 | 1600 |
-| 4 | 160 | 4 | 1800 |
-| 5 | 180 | 9 | 2300 |
-| 6 | 200 | 8 | 1700 |
-| 7 | 300 | 14 | 1900 |
-| 8 | 400 | 16 | 2000 |
+Output files (in `output/`):
+- `alternative_demand.csv`
+- `national_fuel_income.csv`
+- `zonal_fuel_income.csv`
 
-## Development environment setup
-
-Install GNU Fortran (`gfortran`) and run:
+## Build and run
 
 ```bash
 make build
-```
-
-Run the app:
-
-```bash
 make run
 ```
 
-When prompted, enter 4 parameter values, for example:
+## Notes
 
-```text
-0.5 0.2 -0.01 -0.05
-```
-
-The program prints probabilities `P(alt1..alt3)` for each row.
+- Target source file is `src/Mikrosim_ny.f90`.
+- National output is aggregated by fuel type and household income class (`HI1..HI5`).
+- Zonal output provides the same dimensions for each zone.
