@@ -189,9 +189,9 @@ contains
   end function output_income_class
 
   subroutine softmax(utilities, probs, n)
+    integer, intent(in) :: n
     real(dp), intent(in) :: utilities(n)
     real(dp), intent(out) :: probs(n)
-    integer, intent(in) :: n
     real(dp) :: max_u, denominator
     integer :: i
     max_u = maxval(utilities(1:n))
@@ -216,7 +216,8 @@ contains
     if (fueltype == 1 .or. fueltype == 5) then
       base = 360.0_dp + 107.0_dp * min(max(co2 - 75.0_dp, 0.0_dp), 50.0_dp) + 132.0_dp * max(co2 - 125.0_dp, 0.0_dp)
     else if (fueltype == 2 .or. fueltype == 6) then
-      base = 360.0_dp + 107.0_dp * min(max(co2 - 75.0_dp, 0.0_dp), 50.0_dp) + 132.0_dp * max(co2 - 125.0_dp, 0.0_dp) + co2 * 13.52_dp + 250.0_dp
+      base = 360.0_dp + 107.0_dp * min(max(co2 - 75.0_dp, 0.0_dp), 50.0_dp) + 132.0_dp * max(co2 - 125.0_dp, 0.0_dp) + &
+        co2 * 13.52_dp + 250.0_dp
     end if
     yearly_tax_sek = base * tax_multiplier
   end function yearly_tax_sek
@@ -256,7 +257,7 @@ contains
     end do
   end function to_lower
 
-  pure logical function token_to_real(token, value)
+  logical function token_to_real(token, value)
     character(len=*), intent(in) :: token
     real(dp), intent(out) :: value
     integer :: ios
@@ -308,8 +309,9 @@ contains
       if (ios /= 0) exit
       if (is_skip_line(line)) cycle
       call normalize_delimiters(line)
-      read(line, *, iostat=ios) zone_number, record_number, household_id, person_id, hh_bost, hh_ink, hh_n_arb, hh_n_bil, hh_n_kk, hh_typ, &
-        kort, p0_age, p0_forv, p0_ink, p0_kk, p0_kort, p0_sex, sample_hh_id, weight, ant_vux, ant_barn, hhvikt
+      read(line, *, iostat=ios) zone_number, record_number, household_id, person_id, &
+        hh_bost, hh_ink, hh_n_arb, hh_n_bil, hh_n_kk, hh_typ, kort, p0_age, p0_forv, &
+        p0_ink, p0_kk, p0_kort, p0_sex, sample_hh_id, weight, ant_vux, ant_barn, hhvikt
       if (ios /= 0) cycle
 
       row_count = row_count + 1
@@ -479,8 +481,9 @@ contains
         stop 1
       end if
 
-      read(line, *, iostat=ios) cars(n_cars)%choice_ut, cars(n_cars)%lopnr, cars(n_cars)%altnr, cars(n_cars)%make, cars(n_cars)%fueltype, &
-        cars(n_cars)%fclass, cars(n_cars)%kombi, cars(n_cars)%rust, cars(n_cars)%curbw, cars(n_cars)%lprice, cars(n_cars)%nco9, &
+      read(line, *, iostat=ios) cars(n_cars)%choice_ut, cars(n_cars)%lopnr, cars(n_cars)%altnr, &
+        cars(n_cars)%make, cars(n_cars)%fueltype, cars(n_cars)%fclass, cars(n_cars)%kombi, &
+        cars(n_cars)%rust, cars(n_cars)%curbw, cars(n_cars)%lprice, cars(n_cars)%nco9, &
         cars(n_cars)%ncc09, cars(n_cars)%rangee, cars(n_cars)%fuelcons, cars(n_cars)%fuelcons_el, cars(n_cars)%segut, &
         cars(n_cars)%storlekut, cars(n_cars)%karossut, cars(n_cars)%co2
       if (ios /= 0) then
@@ -655,7 +658,8 @@ contains
       stop 1
     end if
 
-    write(unit, '(A)') 'Choice_ut,Lopnr,Make,Fueltype,AdjustedPrice_kSEK,AdjustedFossilCons,AdjustedElectricCons,AdjustedRange,AdjustedCO2,OpCost_kSEK'
+    write(unit, '(A)') 'Choice_ut,Lopnr,Make,Fueltype,AdjustedPrice_kSEK,'// &
+      'AdjustedFossilCons,AdjustedElectricCons,AdjustedRange,AdjustedCO2,OpCost_kSEK'
     do i = 1, n_cars
       write(unit, '(I0, ",", I0, ",", I0, ",", I0, ",", F12.5, ",", F12.5, ",", F12.5, ",", F12.5, ",", F12.5, ",", F12.5)') &
         cars(i)%choice_ut, cars(i)%lopnr, cars(i)%make, cars(i)%fueltype, prepared(i)%adjusted_price_ksek, &
@@ -682,7 +686,8 @@ contains
 
     write(unit, '(A)') 'Choice_ut,Lopnr,Make,Fueltype,ExpectedDemand'
     do i = 1, n_cars
-      write(unit, '(I0, ",", I0, ",", I0, ",", I0, ",", F16.6)') cars(i)%choice_ut, cars(i)%lopnr, cars(i)%make, cars(i)%fueltype, expected_alt(i)
+      write(unit, '(I0, ",", I0, ",", I0, ",", I0, ",", F16.6)') &
+        cars(i)%choice_ut, cars(i)%lopnr, cars(i)%make, cars(i)%fueltype, expected_alt(i)
     end do
     close(unit)
   end subroutine write_alternative_results
@@ -691,7 +696,7 @@ contains
     character(len=*), intent(in) :: output_dir
     real(dp), intent(in) :: national(N_FUEL_TYPES, N_OUTPUT_INCOME)
     character(len=1024) :: path
-    character(len=8), parameter :: income_labels(N_OUTPUT_INCOME) = [ 'HI1', 'HI2', 'HI3', 'HI4plus' ]
+    character(len=8), parameter :: income_labels(N_OUTPUT_INCOME) = [ 'HI1     ', 'HI2     ', 'HI3     ', 'HI4plus ' ]
     integer :: unit, ios, fuel_type, inc
 
     path = build_output_path(output_dir, 'national_fuel_income.csv')
@@ -716,7 +721,7 @@ contains
     real(dp), intent(in) :: zonal(MAX_ZONES, N_FUEL_TYPES, N_OUTPUT_INCOME)
     integer, intent(in) :: n_zones
     character(len=1024) :: path
-    character(len=8), parameter :: income_labels(N_OUTPUT_INCOME) = [ 'HI1', 'HI2', 'HI3', 'HI4plus' ]
+    character(len=8), parameter :: income_labels(N_OUTPUT_INCOME) = [ 'HI1     ', 'HI2     ', 'HI3     ', 'HI4plus ' ]
     integer :: unit, ios, zone_idx, fuel_type, inc
 
     path = build_output_path(output_dir, 'zonal_fuel_income.csv')
@@ -730,7 +735,8 @@ contains
     do zone_idx = 1, n_zones
       do fuel_type = 1, N_FUEL_TYPES
         do inc = 1, N_OUTPUT_INCOME
-          write(unit, '(I0, ",", I0, ",", A, ",", F16.6)') zones(zone_idx)%zone_number, fuel_type, trim(income_labels(inc)), &
+          write(unit, '(I0, ",", I0, ",", A, ",", F16.6)') &
+            zones(zone_idx)%zone_number, fuel_type, trim(income_labels(inc)), &
             zonal(zone_idx, fuel_type, inc)
         end do
       end do
@@ -783,12 +789,16 @@ contains
 
       if (cars(i)%fueltype /= 3) fossil_cons = fossil_cons * scenario%fossil_consumption_factor
       electric_cons = electric_cons * scenario%electric_consumption_factor
-      if (cars(i)%fueltype == 3 .or. cars(i)%fueltype == 9 .or. cars(i)%fueltype == 10) range_adj = range_adj * scenario%ev_range_factor
+      if (cars(i)%fueltype == 3 .or. cars(i)%fueltype == 9 .or. cars(i)%fueltype == 10) then
+        range_adj = range_adj * scenario%ev_range_factor
+      end if
 
       if (cars(i)%fueltype == 3) then
-        op_cost_ksek = (electric_cons * 150.0_dp * fuel_prices(cars(i)%fueltype) + yearly_tax_sek(cars(i)%fueltype, co2_adj, scenario%tax_multiplier)) / 1000.0_dp
+        op_cost_ksek = (electric_cons * 150.0_dp * fuel_prices(cars(i)%fueltype) + &
+          yearly_tax_sek(cars(i)%fueltype, co2_adj, scenario%tax_multiplier)) / 1000.0_dp
       else
-        op_cost_ksek = (fossil_cons * 150.0_dp * fuel_prices(cars(i)%fueltype) + yearly_tax_sek(cars(i)%fueltype, co2_adj, scenario%tax_multiplier)) / 1000.0_dp
+        op_cost_ksek = (fossil_cons * 150.0_dp * fuel_prices(cars(i)%fueltype) + &
+          yearly_tax_sek(cars(i)%fueltype, co2_adj, scenario%tax_multiplier)) / 1000.0_dp
       end if
 
       prepared(i)%choice_ut = cars(i)%choice_ut
@@ -801,7 +811,8 @@ contains
       prepared(i)%adjusted_range = max(range_adj, 0.0_dp)
       prepared(i)%adjusted_co2 = max(co2_adj, 0.0_dp)
       prepared(i)%op_cost_ksek = max(op_cost_ksek, 0.0_dp)
-      prepared(i)%supports_electric_zone_terms = (cars(i)%fueltype == 3 .or. cars(i)%fueltype == 9 .or. cars(i)%fueltype == 10)
+      prepared(i)%supports_electric_zone_terms = (cars(i)%fueltype == 3 .or. &
+        cars(i)%fueltype == 9 .or. cars(i)%fueltype == 10)
       prepared(i)%utility_no_price = static_utility_component(cars(i), prepared(i)%op_cost_ksek, params)
     end do
   end subroutine prepare_alternatives
@@ -842,9 +853,10 @@ contains
       fuel_term = 0.0_dp
     end select
 
-    static_utility_component = params%op_cost * op_cost_ksek + params%rust_guarantee * car%rust + params%passenger_safety * car%nco9 + &
-      params%safety_systems * car%ncc09 + params%size_mid * size_mid + params%size_large * size_large + params%size_sport * size_sport + &
-      fuel_term
+    static_utility_component = params%op_cost * op_cost_ksek + params%rust_guarantee * car%rust + &
+      params%passenger_safety * car%nco9 + params%safety_systems * car%ncc09 + &
+      params%size_mid * size_mid + params%size_large * size_large + &
+      params%size_sport * size_sport + fuel_term
 
     if (car%make >= 1 .and. car%make <= N_MAKES) then
       static_utility_component = static_utility_component + params%make_constant(car%make)
@@ -891,7 +903,8 @@ contains
       end if
 
       do car_idx = 1, n_cars
-        utilities(car_idx) = prepared(car_idx)%utility_no_price + params%price_hi(income_class) * prepared(car_idx)%adjusted_price_ksek
+        utilities(car_idx) = prepared(car_idx)%utility_no_price + &
+          params%price_hi(income_class) * prepared(car_idx)%adjusted_price_ksek
         if (prepared(car_idx)%supports_electric_zone_terms) then
           if (households(hh_idx)%hh_n_bil > 1) utilities(car_idx) = utilities(car_idx) + params%many_cars_hh
           utilities(car_idx) = utilities(car_idx) + params%detached_house * zone%detached_house + &
@@ -966,7 +979,8 @@ program microsim_main
 
   nargs = command_argument_count()
   if (nargs < 6) then
-    write(*, '(A)') 'Usage: microsim_model <population_file> <zone_file> <car_file> <fuelprice_file> <incomeclass_file> <output_dir> [scenario_file]'
+    write(*, '(A)') 'Usage: microsim_model <population_file> <zone_file> <car_file> <fuelprice_file> '// &
+      '<incomeclass_file> <output_dir> [scenario_file]'
     stop 1
   end if
 
@@ -989,8 +1003,8 @@ program microsim_main
   allocate(prepared(n_cars), expected_alt(n_cars))
 
   call prepare_alternatives(cars, n_cars, params, scenario, fuel_prices, prepared)
-  call run_simulation(households, n_households, zones, zone_hash_keys, zone_hash_vals, prepared, n_cars, income_lower, income_upper, &
-    params, scenario, expected_alt, national, zonal)
+  call run_simulation(households, n_households, zones, zone_hash_keys, zone_hash_vals, &
+    prepared, n_cars, income_lower, income_upper, params, scenario, expected_alt, national, zonal)
 
   call write_adjusted_alternatives(trim(output_dir), cars, prepared, n_cars)
   call write_alternative_results(trim(output_dir), cars, expected_alt, n_cars)
