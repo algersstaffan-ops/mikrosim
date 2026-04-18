@@ -1,11 +1,46 @@
 # mikrosim
-Avser bilpark mikrosim
-Create a Fortran code for a multinomial logit model having 3 alternatives. For each alternative, a utility function with 3 variables is defined. The name of the variables are Purchase_cost,  Fuel_cost and Curb_weight. The associated parameters are b1, b2, b3 and b4 to be read into the program. The data of the utility functions is a set of 8 observations as follows (RowID, Purchase_cost,  Fuel_cost, Curb_weight)
-1,100,6,1200
-2,120,8,1300
-3,140,7,1600
-4,160,4,1800
-5,180,9,2300
-6,200,8,1700
-7,300,14,1900
-8,400,16,2000
+
+Fortran microsimulation model for:
+1. Household probability to buy a new car (binary logit)
+2. Car type choice (multinomial logit)
+
+## Program stages implemented
+
+- Initialization of model parameters for both sub-models.
+- Reading synthetic population data (up to 100000 rows).
+- Reading zone data.
+- Reading base car alternatives.
+- Applying scenario adjustments to technical/policy-sensitive attributes.
+- Building transformed variables for all alternatives.
+- For each household:
+  - computing `p_newcar`
+  - computing car type probabilities `p_ct`
+  - accumulating `weight * hhvikt * p_newcar * p_ct`
+- Writing aggregated outputs.
+
+## Files and expected formats
+
+Input files (in `data/`):
+- `population.csv`
+- `zones.csv`
+- `base_car_alternatives.csv`
+- `Fuelprice.dat`
+- `scenario.dat`
+
+Output files (in `output/`):
+- `alternative_demand.csv`
+- `national_fuel_income.csv`
+- `zonal_fuel_income.csv`
+
+## Build and run
+
+```bash
+make build
+make run
+```
+
+## Notes
+
+- Target source file is `src/Mikrosim_ny.f90`.
+- National output is aggregated by fuel type and household income class (`HI1..HI5`).
+- Zonal output provides the same dimensions for each zone.
