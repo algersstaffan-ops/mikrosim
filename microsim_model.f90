@@ -958,8 +958,13 @@ program microsim_main
   use microsim_model
   implicit none
 
-  character(len=1024) :: population_file, zone_file, car_file, fuel_file, income_file, output_dir, scenario_file
-  integer :: nargs
+  character(len=1024), parameter :: population_file = 'testdata/population.dat'
+  character(len=1024), parameter :: zone_file = 'testdata/zones.dat'
+  character(len=1024), parameter :: car_file = 'testdata/cars.dat'
+  character(len=1024), parameter :: fuel_file = 'testdata/fuelprice.dat'
+  character(len=1024), parameter :: income_file = 'testdata/hhclass.dat'
+  character(len=1024), parameter :: output_dir = 'output'
+  character(len=1024), parameter :: scenario_file = 'testdata/scenario.dat'
 
   type(Household) :: households(MAX_HOUSEHOLDS)
   type(ZoneDatum) :: zones(MAX_ZONES)
@@ -977,28 +982,12 @@ program microsim_main
   real(dp) :: national(N_FUEL_TYPES, N_OUTPUT_INCOME)
   real(dp) :: zonal(MAX_ZONES, N_FUEL_TYPES, N_OUTPUT_INCOME)
 
-  nargs = command_argument_count()
-  if (nargs < 6) then
-    write(*, '(A)') 'Usage: microsim_model <population_file> <zone_file> <car_file> <fuelprice_file> '// &
-      '<incomeclass_file> <output_dir> [scenario_file]'
-    stop 1
-  end if
-
-  call get_command_argument(1, population_file)
-  call get_command_argument(2, zone_file)
-  call get_command_argument(3, car_file)
-  call get_command_argument(4, fuel_file)
-  call get_command_argument(5, income_file)
-  call get_command_argument(6, output_dir)
-  scenario_file = 'none'
-  if (nargs >= 7) call get_command_argument(7, scenario_file)
-
-  call read_population(trim(population_file), households, n_households)
-  call read_zone_data(trim(zone_file), zones, n_zones, zone_hash_keys, zone_hash_vals)
-  call read_car_alternatives(trim(car_file), cars, n_cars)
-  call read_fuel_prices(trim(fuel_file), fuel_prices)
-  call read_income_classes(trim(income_file), income_lower, income_upper)
-  call read_scenario(trim(scenario_file), scenario)
+  call read_population(population_file, households, n_households)
+  call read_zone_data(zone_file, zones, n_zones, zone_hash_keys, zone_hash_vals)
+  call read_car_alternatives(car_file, cars, n_cars)
+  call read_fuel_prices(fuel_file, fuel_prices)
+  call read_income_classes(income_file, income_lower, income_upper)
+  call read_scenario(scenario_file, scenario)
 
   allocate(prepared(n_cars), expected_alt(n_cars))
 
@@ -1006,10 +995,10 @@ program microsim_main
   call run_simulation(households, n_households, zones, zone_hash_keys, zone_hash_vals, &
     prepared, n_cars, income_lower, income_upper, params, scenario, expected_alt, national, zonal)
 
-  call write_adjusted_alternatives(trim(output_dir), cars, prepared, n_cars)
-  call write_alternative_results(trim(output_dir), cars, expected_alt, n_cars)
-  call write_national_results(trim(output_dir), national)
-  call write_zonal_results(trim(output_dir), zones, zonal, n_zones)
+  call write_adjusted_alternatives(output_dir, cars, prepared, n_cars)
+  call write_alternative_results(output_dir, cars, expected_alt, n_cars)
+  call write_national_results(output_dir, national)
+  call write_zonal_results(output_dir, zones, zonal, n_zones)
 
   write(*, '(A)') 'Microsimulation completed.'
   write(*, '(A, I0)') 'Households simulated: ', n_households

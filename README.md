@@ -27,23 +27,32 @@ Requires `gfortran`:
 
 ## Run
 
-`./microsim_model <population_file> <zone_file> <car_file> <fuelprice_file> <incomeclass_file> <output_dir> [scenario_file]`
+Input files are coded directly in `microsim_model.f90` in the `microsim_main` program.
+Default paths are:
 
-Example:
+- `testdata/population.dat`
+- `testdata/zones.dat`
+- `testdata/cars.dat`
+- `testdata/fuelprice.dat`
+- `testdata/hhclass.dat`
+- `testdata/scenario.dat` (optional, program falls back to defaults if missing)
+- output directory: `output`
 
-- `./microsim_model testdata/population.dat testdata/zones.dat testdata/cars.dat testdata/fuelprice.dat testdata/hhclass.dat output testdata/scenario.dat`
+Run with no arguments:
+
+- `./microsim_model`
 
 ## Input files
 
 The reader accepts comma, semicolon, tab, or space separated text rows.
 Comment lines starting with `#` or `!` are ignored.
 
-- `population_file`: person-level synthetic population (households are deduplicated by `Household_id`).
-- `zone_file`: zone-level attributes (detached housing, charging indicators, etc.).
-- `car_file`: base car alternatives (make/fuel/technical attributes).
-- `fuelprice_file`: two columns: `FuelType`, `Price`.
-- `incomeclass_file`: income class bounds (defaults are used if file is missing).
-- `scenario_file` (optional): key-value multipliers/adders for technical and policy scenarios.
+- `population.dat`: person-level synthetic population (households are deduplicated by `Household_id`).
+- `zones.dat`: zone-level attributes (detached housing, charging indicators, etc.).
+- `cars.dat`: base car alternatives (make/fuel/technical attributes).
+- `fuelprice.dat`: two columns: `FuelType`, `Price`.
+- `hhclass.dat`: income class bounds (defaults are used if file is missing).
+- `scenario.dat` (optional): key-value multipliers/adders for technical and policy scenarios.
 
 ## Outputs
 
