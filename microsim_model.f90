@@ -7,8 +7,8 @@ module microsim_kinds
 
   integer, parameter :: MAX_POP_ROWS = 100000
   integer, parameter :: MAX_HOUSEHOLDS = 100000
-  integer, parameter :: MAX_ZONES = 20000
-  integer, parameter :: MAX_CARS = 50000
+  integer, parameter :: MAX_ZONES = 100
+  integer, parameter :: MAX_CARS = 600
 
   integer, parameter :: N_FUEL_TYPES = 10
   integer, parameter :: N_INCOME_CLASSES = 5
