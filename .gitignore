@@ -1,0 +1,5 @@
+*.mod
+*.o
+microsim_model
+output/
+testdata/

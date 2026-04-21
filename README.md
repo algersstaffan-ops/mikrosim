@@ -1,11 +1,64 @@
 # mikrosim
-Avser bilpark mikrosim
-Create a Fortran code for a multinomial logit model having 3 alternatives. For each alternative, a utility function with 3 variables is defined. The name of the variables are Purchase_cost,  Fuel_cost and Curb_weight. The associated parameters are b1, b2, b3 and b4 to be read into the program. The data of the utility functions is a set of 8 observations as follows (RowID, Purchase_cost,  Fuel_cost, Curb_weight)
-1,100,6,1200
-2,120,8,1300
-3,140,7,1600
-4,160,4,1800
-5,180,9,2300
-6,200,8,1700
-7,300,14,1900
-8,400,16,2000
+
+Fortran implementation of a household-level car demand microsimulation model.
+
+## What the program does
+
+The model runs in two steps for each household:
+
+1. **Binary logit** for probability to buy a new car (`p_newcar`).
+2. **Multinomial logit** across car alternatives for car type probabilities (`p_ct`).
+
+For each household and alternative, expected demand contribution is:
+
+- `HH_weight * p_newcar * p_ct`
+
+The program aggregates contributions to:
+
+- Alternative level
+- National fuel-type x income-class level
+- Zone x fuel-type x income-class level
+
+## Build
+
+Requires `gfortran`:
+
+- `gfortran -std=f2008 -O2 microsim_model.f90 -o microsim_model`
+
+## Run
+
+Input files are coded directly in `microsim_model.f90` in the `microsim_main` program.
+Default paths are:
+
+- `testdata/population.dat`
+- `testdata/zones.dat`
+- `testdata/cars.dat`
+- `testdata/fuelprice.dat`
+- `testdata/hhclass.dat`
+- `testdata/scenario.dat` (optional, program falls back to defaults if missing)
+- output directory: `output`
+
+Run with no arguments:
+
+- `./microsim_model`
+
+## Input files
+
+The reader accepts comma, semicolon, tab, or space separated text rows.
+Comment lines starting with `#` or `!` are ignored.
+
+- `population.dat`: person-level synthetic population (households are deduplicated by `Household_id`).
+- `zones.dat`: zone-level attributes (detached housing, charging indicators, etc.).
+- `cars.dat`: base car alternatives (make/fuel/technical attributes).
+- `fuelprice.dat`: two columns: `FuelType`, `Price`.
+- `hhclass.dat`: income class bounds (defaults are used if file is missing).
+- `scenario.dat` (optional): key-value multipliers/adders for technical and policy scenarios.
+
+## Outputs
+
+Written to `<output_dir>`:
+
+- `adjusted_car_alternatives.csv`
+- `expected_by_alternative.csv`
+- `national_fuel_income.csv`
+- `zonal_fuel_income.csv`
