@@ -6,7 +6,7 @@ module microsim_kinds
   integer(int64), parameter :: EMPTY_KEY = huge(0_int64)
 
   integer, parameter :: MAX_POP_ROWS = 100000
-  integer, parameter :: MAX_HOUSEHOLDS = 100000
+  integer, parameter :: MAX_HOUSEHOLDS = 500000
   integer, parameter :: MAX_ZONES = 100
   integer, parameter :: MAX_CARS = 600
 
@@ -290,7 +290,7 @@ contains
     logical :: is_new
     integer :: idx
 
-    hash_size = 262147
+    hash_size = 1048583
     allocate(hash_keys(hash_size), hash_vals(hash_size))
     hash_keys = EMPTY_KEY
     hash_vals = 0
