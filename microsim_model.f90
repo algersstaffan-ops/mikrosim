@@ -6,7 +6,7 @@ module microsim_kinds
   integer(int64), parameter :: EMPTY_KEY = huge(0_int64)
 
   integer, parameter :: MAX_POP_ROWS = 100000
-  integer, parameter :: MAX_HOUSEHOLDS = 500000
+  integer, parameter :: MAX_HOUSEHOLDS = 11000000
   integer, parameter :: MAX_ZONES = 100
   integer, parameter :: MAX_CARS = 600
 
@@ -956,6 +956,7 @@ program microsim_main
   use microsim_types
   use microsim_io
   use microsim_model
+  use, intrinsic :: iso_fortran_env, only: int64
   implicit none
 
   character(len=1024), parameter :: population_file = 'testdata/population.dat'
@@ -965,6 +966,7 @@ program microsim_main
   character(len=1024), parameter :: income_file = 'testdata/hhclass.dat'
   character(len=1024), parameter :: output_dir = 'output'
   character(len=1024), parameter :: scenario_file = 'testdata/scenario.dat'
+  integer(int64), parameter :: MEMORY_LIMIT_4GIB = 4_int64 * 1024_int64 * 1024_int64 * 1024_int64
 
   type(Household) :: households(MAX_HOUSEHOLDS)
   type(ZoneDatum) :: zones(MAX_ZONES)
@@ -981,6 +983,24 @@ program microsim_main
   real(dp), allocatable :: expected_alt(:)
   real(dp) :: national(N_FUEL_TYPES, N_OUTPUT_INCOME)
   real(dp) :: zonal(MAX_ZONES, N_FUEL_TYPES, N_OUTPUT_INCOME)
+  integer(int64) :: size_households, size_zones, size_cars
+  integer(int64) :: size_national, size_zonal, size_misc
+  integer(int64) :: total_static_bytes
+
+  size_households = int(storage_size(households) / 8, int64)
+  size_zones = int(storage_size(zones) / 8, int64)
+  size_cars = int(storage_size(cars) / 8, int64)
+  size_national = int(storage_size(national) / 8, int64)
+  size_zonal = int(storage_size(zonal) / 8, int64)
+  size_misc = int(1048583_int64 * 8_int64 + 1048583_int64 * 4_int64, int64)
+  total_static_bytes = size_households + size_zones + size_cars + size_national + size_zonal + size_misc
+
+  write(*, '(A, I0, A, F8.3, A)') 'Static memory estimate: ', total_static_bytes, ' bytes (', &
+    real(total_static_bytes, dp) / (1024.0_dp * 1024.0_dp * 1024.0_dp), ' GiB)'
+  if (total_static_bytes > MEMORY_LIMIT_4GIB) then
+    write(*, '(A)') 'Configuration exceeds 4 GiB static memory budget.'
+    stop 1
+  end if
 
   call read_population(population_file, households, n_households)
   call read_zone_data(zone_file, zones, n_zones, zone_hash_keys, zone_hash_vals)
