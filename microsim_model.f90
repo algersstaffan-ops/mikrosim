@@ -5,10 +5,11 @@ module microsim_kinds
   integer, parameter :: dp = real64
   integer(int64), parameter :: EMPTY_KEY = huge(0_int64)
 
-  integer, parameter :: MAX_POP_ROWS = 100000
+  integer, parameter :: MAX_POP_ROWS = 11000000
   integer, parameter :: MAX_HOUSEHOLDS = 11000000
   integer, parameter :: MAX_ZONES = 100
   integer, parameter :: MAX_CARS = 600
+  integer, parameter :: HH_HASH_SIZE = 2 * MAX_HOUSEHOLDS + 1
 
   integer, parameter :: N_FUEL_TYPES = 10
   integer, parameter :: N_INCOME_CLASSES = 5
@@ -290,7 +291,7 @@ contains
     logical :: is_new
     integer :: idx
 
-    hash_size = 1048583
+    hash_size = HH_HASH_SIZE
     allocate(hash_keys(hash_size), hash_vals(hash_size))
     hash_keys = EMPTY_KEY
     hash_vals = 0
@@ -992,7 +993,7 @@ program microsim_main
   size_cars = int(storage_size(cars) / 8, int64)
   size_national = int(storage_size(national) / 8, int64)
   size_zonal = int(storage_size(zonal) / 8, int64)
-  size_misc = int(1048583_int64 * 8_int64 + 1048583_int64 * 4_int64, int64)
+  size_misc = int(HH_HASH_SIZE, int64) * (8_int64 + 4_int64)
   total_static_bytes = size_households + size_zones + size_cars + size_national + size_zonal + size_misc
 
   write(*, '(A, I0, A, F8.3, A)') 'Static memory estimate: ', total_static_bytes, ' bytes (', &
